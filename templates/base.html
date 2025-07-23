@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Sistema de Inventario{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+      body { background: #f4f6fa; }
+      .sidebar {
+        min-height: 100vh;
+        background: #212b36;
+        color: #fff;
+      }
+      .sidebar .nav-link {
+        color: #b0bec5;
+        font-weight: 500;
+      }
+      .sidebar .nav-link.active, .sidebar .nav-link:hover {
+        color: #fff;
+        background: #1de9b6;
+      }
+      .sidebar .nav-link svg {
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      .sidebar .logo {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #1de9b6;
+        letter-spacing: 1px;
+        padding: 1.2rem 1rem 1rem 1rem;
+        display: block;
+        text-decoration: none;
+      }
+      @media (max-width: 991.98px) {
+        .sidebar { position: fixed; z-index: 1040; left: -250px; width: 220px; transition: left 0.3s; }
+        .sidebar.show { left: 0; }
+        .sidebar-backdrop { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1039; }
+        .sidebar.show ~ .sidebar-backdrop { display: block; }
+      }
+    </style>
+</head>
+<body>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <nav id="sidebarMenu" class="sidebar d-lg-block bg-dark">
+        <a href="/dashboard" class="logo">INVENTARIO</a>
+        <ul class="nav flex-column mb-auto">
+            <li class="nav-item"><a class="nav-link" href="/dashboard"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="13" width="7" height="8"/><rect x="14" y="8" width="7" height="13"/><rect x="14" y="3" width="7" height="3"/></svg>Panel</a></li>
+            <li class="nav-item"><a class="nav-link" href="/productos"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4M8 3v4"/></svg>Productos</a></li>
+            <li class="nav-item"><a class="nav-link" href="/entradas"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19V6M5 12l7 7 7-7"/></svg>Entradas</a></li>
+            <li class="nav-item"><a class="nav-link" href="/ventas"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>Ventas</a></li>
+            <li class="nav-item"><a class="nav-link" href="/stock-bajo"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>Stock Bajo</a></li>
+        </ul>
+        <ul class="nav flex-column mt-auto">
+            <li class="nav-item"><a class="nav-link text-danger" href="/logout"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7"/><path d="M3 21V3a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v4"/></svg>Salir</a></li>
+        </ul>
+    </nav>
+    <div class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+    <!-- Main content -->
+    <div class="flex-grow-1">
+        <nav class="navbar navbar-light bg-white shadow-sm d-lg-none">
+            <div class="container-fluid">
+                <button class="btn btn-outline-secondary" type="button" onclick="toggleSidebar(true)">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <span class="navbar-brand ms-2">Sistema de Inventario</span>
+            </div>
+        </nav>
+        <main class="container-fluid py-4">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function toggleSidebar(show) {
+    const sidebar = document.getElementById('sidebarMenu');
+    const backdrop = document.querySelector('.sidebar-backdrop');
+    if (show) {
+      sidebar.classList.add('show');
+      backdrop.classList.add('show');
+    } else {
+      sidebar.classList.remove('show');
+      backdrop.classList.remove('show');
+    }
+  }
+  // Cierra el sidebar al hacer clic en un enlace (en móvil)
+  document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth < 992) toggleSidebar(false);
+    });
+  });
+</script>
+</body>
+</html> 

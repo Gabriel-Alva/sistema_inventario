@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Ventas{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Ventas de Productos</h2>
+  <button id="abrirModalVenta" class="btn btn-success"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Registrar venta</button>
+</div>
+{% if msg %}
+<div class="alert alert-success alert-dismissible fade show" role="alert" id="flash-msg">
+  {{ msg }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<script>setTimeout(()=>{const m=document.getElementById('flash-msg');if(m)m.style.display='none';},3000);</script>
+{% endif %}
+<form method="get" action="/ventas" class="row g-2 align-items-center mb-3">
+  <div class="col-md-4">
+    <input type="text" class="form-control" name="filtro" placeholder="Buscar por producto..." value="{{ filtro|default('') }}">
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+  </div>
+  <div class="col-auto">
+    <a href="/ventas/exportar/excel?filtro={{ filtro|default('') }}" class="btn btn-success">Exportar Excel</a>
+  </div>
+  <div class="col-auto">
+    <a href="/ventas/exportar/pdf?filtro={{ filtro|default('') }}" class="btn btn-danger">Exportar PDF</a>
+  </div>
+</form>
+<!-- Modal para registrar venta -->
+<div id="modalVenta" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+  <div class="card shadow" style="min-width:340px; position:relative;">
+    <button id="cerrarModalVenta" class="btn-close position-absolute end-0 m-2" style="z-index:2;"></button>
+    <div class="card-body">
+      <h4 class="card-title mb-3">Registrar Venta</h4>
+      <form method="post" action="/ventas/nueva">
+        <div class="mb-2"><label class="form-label" for="id_producto">Producto:</label>
+          <select name="id_producto" id="id_producto" class="form-select">
+            {% for producto in productos %}
+            <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2"><label class="form-label" for="cantidad">Cantidad:</label>
+          <input type="number" name="cantidad" id="cantidad" min="1" class="form-control" required>
+        </div>
+        <div class="mb-2"><label class="form-label" for="precio_total">Precio Total:</label>
+          <input type="number" name="precio_total" id="precio_total" min="0" step="0.01" class="form-control" required>
+        </div>
+        <div class="d-grid"><button type="submit" class="btn btn-primary">Registrar</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal para editar venta -->
+<div id="modalEditarVenta" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+  <div class="card shadow" style="min-width:340px; position:relative;">
+    <button id="cerrarModalEditarVenta" class="btn-close position-absolute end-0 m-2" style="z-index:2;"></button>
+    <div class="card-body">
+      <h4 class="card-title mb-3">Editar Venta</h4>
+      <form id="formEditarVenta" method="post">
+        <input type="hidden" name="id_venta" id="edit_id_venta">
+        <div class="mb-2"><label class="form-label" for="edit_id_producto_venta">Producto:</label>
+          <select name="id_producto" id="edit_id_producto_venta" class="form-select">
+            {% for producto in productos %}
+            <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2"><label class="form-label" for="edit_cantidad_venta">Cantidad:</label>
+          <input type="number" name="cantidad" id="edit_cantidad_venta" min="1" class="form-control" required>
+        </div>
+        <div class="mb-2"><label class="form-label" for="edit_precio_total">Precio Total:</label>
+          <input type="number" name="precio_total" id="edit_precio_total" min="0" step="0.01" class="form-control" required>
+        </div>
+        <div class="d-grid"><button type="submit" class="btn btn-primary">Guardar cambios</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="table-responsive">
+<table class="table table-hover align-middle bg-white">
+  <thead class="table-light">
+    <tr>
+      <th>ID</th><th>Producto</th><th>Cantidad</th><th>Precio Total</th><th>Fecha</th><th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for venta in ventas %}
+    <tr>
+      <td>{{ venta.id_venta }}</td>
+      <td>{{ venta.nombre_producto }}</td>
+      <td>{{ venta.cantidad }}</td>
+      <td>${{ venta.precio_total }}</td>
+      <td>{{ venta.fecha_venta }}</td>
+      <td>
+        <button class="btn btn-sm btn-warning btnEditarVenta"
+          data-id="{{ venta.id_venta }}"
+          data-id_producto="{{ venta.id_producto }}"
+          data-cantidad="{{ venta.cantidad }}"
+          data-precio_total="{{ venta.precio_total }}"
+        ><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg> Editar</button>
+        <form method="post" action="/ventas/eliminar/{{ venta.id_venta }}" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar esta venta?');">
+          <button type="submit" class="btn btn-sm btn-danger"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M9 6v12a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V6m-6 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg> Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+<script>
+  // Modal registrar
+  const modalVenta = document.getElementById('modalVenta');
+  document.getElementById('abrirModalVenta').onclick = () => { modalVenta.style.display = 'flex'; };
+  document.getElementById('cerrarModalVenta').onclick = () => { modalVenta.style.display = 'none'; };
+  // Modal editar
+  const modalEditarVenta = document.getElementById('modalEditarVenta');
+  document.getElementById('cerrarModalEditarVenta').onclick = () => { modalEditarVenta.style.display = 'none'; };
+  document.querySelectorAll('.btnEditarVenta').forEach(btn => {
+    btn.onclick = function() {
+      document.getElementById('edit_id_venta').value = this.dataset.id;
+      document.getElementById('edit_id_producto_venta').value = this.dataset.id_producto;
+      document.getElementById('edit_cantidad_venta').value = this.dataset.cantidad;
+      document.getElementById('edit_precio_total').value = this.dataset.precio_total;
+      document.getElementById('formEditarVenta').action = '/ventas/editar/' + this.dataset.id;
+      modalEditarVenta.style.display = 'flex';
+    }
+  });
+  window.onclick = function(event) {
+    if (event.target === modalVenta) { modalVenta.style.display = 'none'; }
+    if (event.target === modalEditarVenta) { modalEditarVenta.style.display = 'none'; }
+  }
+</script>
+{% endblock %} 
